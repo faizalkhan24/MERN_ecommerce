@@ -129,11 +129,11 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function Nevigation() {
+export default function Nevigation() { 
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="bg-white">
+    <div className="bg-white relative z-10">
       {/* Mobile menu */}
       <Transition.Root show={open} as={Fragment}>
         <Dialog as="div" className="relative z-40 lg:hidden" onClose={setOpen}>
