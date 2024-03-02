@@ -5,9 +5,10 @@ import HomeSectionCard from "../HomeSectionCard/HomeSectionCard";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { Button } from "@mui/material";
-import { men_kurta } from "../../../Data/men_kurta";
 
-const HomeSectionCarosel = () => {
+// ... (your imports)
+
+const HomeSectionCarosel = ({data, sectionName}) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const carouselRef = useRef();
 
@@ -18,24 +19,27 @@ const HomeSectionCarosel = () => {
   };
 
   const slideprev = () => {
-    setActiveIndex((prevIndex) => prevIndex - 1);
+    setActiveIndex(activeIndex - 1);
     carouselRef.current.slidePrev();
   };
 
   const slidenext = () => {
-    setActiveIndex((prevIndex) => prevIndex + 1);
+    setActiveIndex(activeIndex + 1);
     carouselRef.current.slideNext();
   };
 
   const syncActiveIndex = ({ item }) => setActiveIndex(item);
 
-  const items = men_kurta.slice(0, 10).map((item) => <HomeSectionCard prodcut={item} />);
+  const items = data.slice(0, 10).map((item) => <HomeSectionCard prodcut={item} />);
+
+  const shouldHideNext = activeIndex >= items.length - 5 || items.length <= 5;
+  const shouldHidePrev = activeIndex === 0;
 
   return (
-    <div className="">
+    <div className="border">
+      <h2 className="text-2x1 font-extrabold text-grey-800 py-5">{sectionName}</h2>
       <div className="relative p5">
         <AliceCarousel
-          mouseTracking
           items={items}
           disableButtonsControls
           responsive={responsive}
@@ -44,7 +48,7 @@ const HomeSectionCarosel = () => {
           activeIndex={activeIndex}
           ref={carouselRef}
         />
-        {activeIndex !== items.length - 1 && (
+        {!shouldHideNext && (
           <Button
             className="z-50 bg-white"
             variant="contained"
@@ -60,7 +64,7 @@ const HomeSectionCarosel = () => {
           </Button>
         )}
 
-        {activeIndex > 5 && (
+        {!shouldHidePrev && (
           <Button
             className="z-50 bg-white"
             variant="contained"
