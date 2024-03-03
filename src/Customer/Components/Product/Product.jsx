@@ -11,6 +11,12 @@ import {
 import ProductCard from "./ProductCard";
 import { men_kurta } from "../../Data/Men/men_kurta";
 import { fliter, singlefliter } from "../../Data/Fliter/fliter";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
 
 const sortOptions = [
   { name: "Most Popular", href: "#", current: true },
@@ -19,50 +25,6 @@ const sortOptions = [
   { name: "Price: Low to High", href: "#", current: false },
   { name: "Price: High to Low", href: "#", current: false },
 ];
-// const subCategories = [
-//   { name: "Totes", href: "#" },
-//   { name: "Backpacks", href: "#" },
-//   { name: "Travel Bags", href: "#" },
-//   { name: "Hip Bags", href: "#" },
-//   { name: "Laptop Sleeves", href: "#" },
-// ];
-// const filters = [
-//   {
-//     id: "color",
-//     name: "Color",
-//     options: [
-//       { value: "white", label: "White", checked: false },
-//       { value: "beige", label: "Beige", checked: false },
-//       { value: "blue", label: "Blue", checked: true },
-//       { value: "brown", label: "Brown", checked: false },
-//       { value: "green", label: "Green", checked: false },
-//       { value: "purple", label: "Purple", checked: false },
-//     ],
-//   },
-//   {
-//     id: "category",
-//     name: "Category",
-//     options: [
-//       { value: "new-arrivals", label: "New Arrivals", checked: false },
-//       { value: "sale", label: "Sale", checked: false },
-//       { value: "travel", label: "Travel", checked: true },
-//       { value: "organization", label: "Organization", checked: false },
-//       { value: "accessories", label: "Accessories", checked: false },
-//     ],
-//   },
-//   {
-//     id: "size",
-//     name: "Size",
-//     options: [
-//       { value: "2l", label: "2L", checked: false },
-//       { value: "6l", label: "6L", checked: false },
-//       { value: "12l", label: "12L", checked: false },
-//       { value: "18l", label: "18L", checked: false },
-//       { value: "20l", label: "20L", checked: false },
-//       { value: "40l", label: "40L", checked: true },
-//     ],
-//   },
-// ];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -70,6 +32,36 @@ function classNames(...classes) {
 
 export default function Product() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleFilter = (value, sectionId) => {
+    const searchParams = new URLSearchParams(location.search)
+    let filterValue = searchParams.getAll(sectionId)
+
+    if (filterValue.length > 0 && filterValue[0].split(",").includes(value)) {
+      filterValue = filterValue[0].split(",").filter((item) => item !== value)
+
+      if (filterValue.length === 0) {
+        searchParams.delete(sectionId)
+      }
+    }
+    else {
+      filterValue.push(value);
+    }
+    if (filterValue.length > 0) {
+      searchParams.set(sectionId, filterValue.join(","));
+    }
+    const query = searchParams.toString();
+    navigate({ search: `?${query}` })
+  }
+
+  const radiofilterchange = (e, sectionId) => {
+    const searchParams = new URLSearchParams(location.search)
+    searchParams.set(sectionId, e.target.value)
+    const query = searchParams.toString();
+    navigate({ search: `?${query}` })
+  }
 
   return (
     <div className="bg-white">
@@ -382,7 +374,9 @@ export default function Product() {
                                 className="flex items-center"
                               >
                                 <input
-                                  id={`filter-${section.id}-${optionIdx}`}
+                                  onChange={(event) =>
+                                    handleFilter(option.value, section.id, event)
+                                  } id={`filter-${section.id}-${optionIdx}`}
                                   name={`${section.id}[]`}
                                   defaultValue={option.value}
                                   type="checkbox"
@@ -414,9 +408,10 @@ export default function Product() {
                       <>
                         <h3 className="-my-3 flow-root">
                           <Disclosure.Button className="flex w-full items-center justify-between bg-white py-3 text-sm text-gray-400 hover:text-gray-500">
-                            <span className="font-medium text-gray-900">
-                              {section.name}
-                            </span>
+                            {/* <span className="font-medium text-gray-900">
+                              
+                            </span> */}
+                            <FormLabel sx={{color:"black"}} className="text-gray-900" id="demo-radio-buttons-group-label">{section.name}</FormLabel>
                             <span className="ml-6 flex items-center">
                               {open ? (
                                 <MinusIcon
@@ -434,47 +429,39 @@ export default function Product() {
                         </h3>
                         <Disclosure.Panel className="pt-6">
                           <div className="space-y-4">
-                            {section.options.map((option, optionIdx) => (
-                              <div
-                                key={option.value}
-                                className="flex items-center"
+                            <FormControl>
+                              <RadioGroup
+                                aria-labelledby="demo-radio-buttons-group-label"
+                                defaultValue="female"
+                                name="radio-buttons-group"
                               >
-                                <input
-                                  id={`filter-${section.id}-${optionIdx}`}
-                                  name={`${section.id}[]`}
-                                  defaultValue={option.value}
-                                  type="checkbox"
-                                  defaultChecked={option.checked}
-                                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                />
-                                <label
-                                  htmlFor={`filter-${section.id}-${optionIdx}`}
-                                  className="ml-3 text-sm text-gray-600"
-                                >
-                                  {option.label}
-                                </label>
-                              </div>
-                            ))}
+                                {section.options.map((option, optionIdx) => (
+                                  <>
+                                    <FormControlLabel onChange={(e)=>radiofilterchange(e, section.id)} value={option.value} control={<Radio />} label={option.label} />
+                                  </>
+                                ))}
+                              </RadioGroup>
+                            </FormControl>
                           </div>
                         </Disclosure.Panel>
-                      </>
+                        </>
                     )}
-                  </Disclosure>
+                      </Disclosure>
                 ))}
-              </form>
+                  </form>
 
-              {/* Product grid */}
-              <div className="lg:col-span-3 w-full">
-                <div className="flex flex-wrap justify-center bg-white py-5">
-                  {men_kurta.map((item) => (
-                    <ProductCard product={item} />
-                  ))}
-                </div>
+              {/* Product grid */ }
+                  < div className = "lg:col-span-3 w-full" >
+                  <div className="flex flex-wrap justify-center bg-white py-5">
+                    {men_kurta.map((item) => (
+                      <ProductCard product={item} />
+                    ))}
+                  </div>
               </div>
-            </div>
-          </section>
-        </main>
-      </div>
+          </div>
+        </section>
+      </main>
     </div>
+    </div >
   );
 }
